@@ -1,0 +1,15 @@
+.env
+.DS_Store
+age-run.log
+age-run.done
+age-config-path.txt
+age-config.json
+smoke.json
+Result/
+.age-config-resolved.json
+
+# Photoshop templates and generated raster images
+*.psd
+*.png
+*.jpg
+*.jpeg

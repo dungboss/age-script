@@ -1,0 +1,21 @@
+{
+  "fromYear": 1956,
+  "toYear": 2006,
+  "templateFolder": "psd",
+  "outputFolder": "Result",
+  "outputFormula": "[mm]-[year]",
+  "months": {
+    "1": "1.psd",
+    "2": "2.psd",
+    "3": "3.psd",
+    "4": "4.psd",
+    "5": "5.psd",
+    "6": "6.psd",
+    "7": "7.psd",
+    "8": "8.psd",
+    "9": "9.psd",
+    "10": "10.psd",
+    "11": "11.psd",
+    "12": "12.psd"
+  }
+}
