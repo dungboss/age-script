@@ -102,6 +102,9 @@ function main() {
   // Mỗi template chỉ mở 1 lần: mở PSD tháng 1 → xuất hết các năm → đóng → sang tháng 2
   var skipped = [];
   var exported = 0;
+  var totalMonths = 0;
+  for (var m = 1; m <= 12; m++) { if (selection.templates[m]) { totalMonths++; } }
+  var totalExports = totalMonths * (selection.toYear - selection.fromYear + 1);
   for (var month = 1; month <= 12; month++) {
     var template = selection.templates[month];
     if (!template) {
@@ -110,6 +113,7 @@ function main() {
     }
     var count = processMonth(month, template, selection);
     exported += count;
+    log("PROGRESS " + exported + "/" + totalExports);
     log("Tháng " + month + " (" + decodeURI(template.name) + "): " + count + " ảnh");
   }
 
@@ -818,6 +822,13 @@ function processMonth(month, template, selection) {
   var exported = 0;
 
   for (var year = selection.fromYear; year <= selection.toYear; year++) {
+    var outputFileName = buildOutputFileName(
+      applyOutputNameFormula(selection.outputFormula, { month: month, year: year })
+    );
+    if (new File(outputFolder.fsName + "/" + outputFileName).exists) {
+      continue;  // resume: ảnh đã có sẵn, bỏ qua
+    }
+
     for (var yl = 0; yl < yearLayers.length; yl++) {
       changeLayerContent(yearLayers[yl], String(year));
     }
@@ -827,9 +838,6 @@ function processMonth(month, template, selection) {
       changeLayerContent(quoteLayers[qi], applyAgeToQuote(quoteTemplates[qi], age));
     }
 
-    var outputFileName = buildOutputFileName(
-      applyOutputNameFormula(selection.outputFormula, { month: month, year: year })
-    );
     doc.exportDocument(
       new File(outputFolder.fsName + "/" + outputFileName),
       ExportType.SAVEFORWEB,
