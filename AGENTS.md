@@ -166,6 +166,10 @@ Cần Adobe Photoshop đã cài. Wrapper tự dò đường dẫn cài đặt.
 
 ### NAS (nơi chứa PSD)
 
+> **Ưu tiên chạy local**: nếu PSD nằm trên NAS, tải PSD + font về `local-run/age/PTS/` trước,
+> ghi config trỏ local, chạy, rồi upload kết quả lên NAS — đừng để Photoshop đọc/ghi trực
+> tiếp qua WebDAV (rất chậm).
+
 Credentials trong `.env` (copy từ `.env.example`, **không commit**). `nas-mount.sh` mount
 NAS lên `/Volumes/` bằng WebDAV để Photoshop mở PSD như file local.
 
