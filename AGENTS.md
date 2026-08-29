@@ -208,6 +208,10 @@ Nếu phải rơi xuống WebDAV, Windows cần dịch vụ **WebClient** đang 
   (ưu tiên bản mới nhất). Cài chỗ khác → đặt biến `AGE_PS_EXE` trỏ tới `Photoshop.exe`.
 - Photoshop **không tự thoát** sau khi script xong, nên batch chờ bằng cách poll file
   `age-run.done`. Mặc định chờ tối đa 60 phút; đổi bằng biến `AGE_TIMEOUT_SEC`.
+- Nếu Photoshop báo lỗi, timeout hoặc không ghi `OK` vào `age-run.done`, wrapper tự
+  đóng Photoshop và thử lại tối đa 3 lần tổng cộng. Đổi số lần thử bằng
+  `AGE_MAX_RETRIES` (mặc định `2` lần retry). Vì JSX bỏ qua ảnh đã tồn tại, lần thử
+  lại sẽ tiếp tục phần còn thiếu, không chạy lại từ đầu.
 - `Photoshop.exe -r` không truyền được tham số, nên batch ghi đường dẫn config vào
   `age-config-path.txt`; script đọc rồi tự xoá. Đừng commit hay sửa file tạm này.
 - Nếu Photoshop đang mở sẵn với document chưa lưu, hộp thoại lưu file có thể chặn
