@@ -13,3 +13,6 @@ Result/
 *.png
 *.jpg
 *.jpeg
+
+# fast-path runtime config (created automatically by fast_run.py)
+.fastpath-age-config.json
