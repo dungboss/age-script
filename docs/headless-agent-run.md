@@ -31,6 +31,10 @@ Exit code: `0` xong · `1` thiếu config / không thấy Photoshop · `2` quá 
 | Biết lúc nào xong | osascript chạy đồng bộ | poll file `age-run.done` |
 | Dò Photoshop | `/Applications/Adobe Photoshop*` | `%ProgramFiles%\Adobe\Adobe Photoshop*`, đè bằng `AGE_PS_EXE` |
 
+Khi Photoshop lỗi, timeout hoặc không ghi `OK`, wrapper tự đóng Photoshop và chạy lại
+tối đa 3 lần tổng cộng. `AGE_MAX_RETRIES=2` là mặc định (2 lần retry). Các ảnh đã xuất
+được bỏ qua khi chạy lại, nên job tiếp tục từ phần còn thiếu.
+
 ## Config
 
 | Key | Bắt buộc | Mặc định | Ghi chú |
