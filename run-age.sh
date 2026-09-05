@@ -82,7 +82,7 @@ while :; do
   rm -f "$DONE"
   set +e
   ERR="$(osascript \
-    -e "tell application \"$PS_APP\" to activate" \
+    -e "tell application \"$PS_APP\" to launch" \
     -e "tell application \"$PS_APP\" to do javascript (file (POSIX file \"$JSX\" as text)) with arguments {\"$CONFIG\"}" \
     2>&1 >/dev/null)"
   STATUS=$?
