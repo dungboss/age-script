@@ -36,10 +36,9 @@ var CURRENT_YEAR = (new Date()).getFullYear();
 var DEFAULT_FROM_YEAR = 1956;
 var DEFAULT_TO_YEAR = 2006;
 
-var exportOptions = new ExportOptionsSaveForWeb();
-exportOptions.quality = 100;
-exportOptions.PNG8 = false;
-exportOptions.format = SaveDocumentType.PNG;
+// Lưu PNG trực tiếp, nhẹ hơn và ổn định hơn Save for Web khi chạy hàng loạt.
+var pngOptions = new PNGSaveOptions();
+pngOptions.interlaced = false;
 
 runMain();
 
@@ -825,8 +824,13 @@ function processMonth(month, template, selection) {
     var outputFileName = buildOutputFileName(
       applyOutputNameFormula(selection.outputFormula, { month: month, year: year })
     );
-    if (new File(outputFolder.fsName + "/" + outputFileName).exists) {
-      continue;  // resume: ảnh đã có sẵn, bỏ qua
+    var outputFile = new File(outputFolder.fsName + "/" + outputFileName);
+    if (outputFile.exists) {
+      if (outputFile.length > 0) {
+        continue;  // resume: ảnh đã có sẵn, bỏ qua
+      }
+      // Save for Web có thể để lại PNG 0 byte khi bị gián đoạn; không coi là đã xong.
+      try { outputFile.remove(); } catch (e) {}
     }
 
     for (var yl = 0; yl < yearLayers.length; yl++) {
@@ -838,11 +842,7 @@ function processMonth(month, template, selection) {
       changeLayerContent(quoteLayers[qi], applyAgeToQuote(quoteTemplates[qi], age));
     }
 
-    doc.exportDocument(
-      new File(outputFolder.fsName + "/" + outputFileName),
-      ExportType.SAVEFORWEB,
-      exportOptions
-    );
+    doc.saveAs(outputFile, pngOptions, true, Extension.LOWERCASE);
     exported++;
   }
 
