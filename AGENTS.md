@@ -26,8 +26,9 @@ for /f "delims=" %B in ('nas-mount.bat') do set "NAS_BASE=%B"   REM Windows → 
 Exit 2 = không tuyến nào vào được. Cả hai script thử lần lượt LAN → Tailscale →
 WebDAV public (khai báo ở `.env`), đã kết nối sẵn thì dùng lại nên gọi nhiều lần vô hại.
 
-macOS mount WebDAV lên `/Volumes/`; Windows dùng SMB/UNC (`\\192.168.1.32`) vì SMB
-native và nhanh hơn trên LAN, chỉ khi SMB không được mới map ổ đĩa WebDAV.
+macOS ưu tiên mount SMB (`/Volumes/NAME`) khi có `NAS_SMB_SHARE`; Windows dùng SMB/UNC
+(`\\192.168.1.32`) vì SMB native và nhanh hơn trên LAN. Nếu SMB không được thì mới
+fallback sang WebDAV.
 
 **Duyệt theo từng cấp, không quét đệ quy toàn NAS** — WebDAV chậm, quét cả cây sẽ
 treo rất lâu. Cách làm:
@@ -174,7 +175,8 @@ Fast-path thực hiện workflow này trên cả macOS và Windows; Windows ch�
 Photoshop bằng `run-age.bat`.
 
 Credentials trong `.env` (copy từ `.env.example`, **không commit**). `nas-mount.sh` mount
-NAS lên `/Volumes/` bằng WebDAV để Photoshop mở PSD như file local.
+NAS lên `/Volumes/` bằng SMB trên mạng local để Photoshop mở PSD và copy output như file
+local; `NAS_SMB_SHARE` là tên share, ví dụ `NAME`.
 
 Ba tuyến vào NAS, thử theo thứ tự — tuyến nào không với tới được thì bỏ qua ngay:
 
@@ -190,10 +192,12 @@ PROPFIND vào 5005 trả `207`, vào 5000 trả `200` (trang HTML login).
 Tuyến chết được loại bằng PROPFIND có timeout (`NAS_PROBE_TIMEOUT`, mặc định 4s) nên
 không bị treo khi ở ngoài mạng.
 
-**Trên macOS đừng dùng SMB.** Cổng 445 có mở, nhưng đo thực tế qua Tailscale:
-SMB `0.42 MB/s` so với WebDAV public `2.0 MB/s` — chậm hơn ~5 lần vì SMB rất nhạy với
-độ trễ WAN. Ngược lại trên Windows ở LAN thì SMB là lựa chọn tốt nhất (native, không
-cần dịch vụ WebClient), nên `nas-mount.bat` ưu tiên SMB.
+**Khi máy ở cùng LAN, SMB là lựa chọn ưu tiên trên cả macOS và Windows.** Qua Tailscale
+hoặc WAN, SMB có thể chậm hơn WebDAV vì nhạy với độ trễ; script vẫn fallback sang WebDAV.
+
+macOS cần khai báo `NAS_SMB_SHARE=NAME` trong `.env`; đây là tên SMB share chứa
+`[NAS]/NAME/...`. Fast-path copy output trực tiếp vào share và kiểm tra kích thước file
+sau khi copy, thay vì gửi từng ảnh bằng WebDAV PUT.
 
 Windows cần thêm `NAS_SMB_1` / `NAS_SMB_2` trong `.env` (chỉ hostname, không cổng).
 Nếu phải rơi xuống WebDAV, Windows cần dịch vụ **WebClient** đang chạy (`sc start WebClient`).

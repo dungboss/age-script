@@ -1,8 +1,8 @@
 #!/bin/bash
 # Mount NAS lên /Volumes để Photoshop mở PSD trực tiếp bằng đường dẫn local.
 #
-# Thử lần lượt các tuyến NAS_URL_1..N trong .env (LAN → Tailscale → WebDAV public),
-# tuyến nào PROPFIND được thì mount tuyến đó.
+# Ưu tiên SMB trên LAN/Tailscale để đọc/ghi như filesystem local; nếu SMB không
+# dùng được thì fallback sang WebDAV.
 #
 # In ra stdout: đường dẫn mount point (đúng 1 dòng) — script khác capture được.
 # Exit: 0 = mount OK | 1 = thiếu config | 2 = không tuyến nào vào được
@@ -24,6 +24,61 @@ set -a; source "$ENV_FILE"; set +a
 : "${WEBDAV_USERNAME:?thiếu WEBDAV_USERNAME trong .env}"
 : "${WEBDAV_PASSWORD:?thiếu WEBDAV_PASSWORD trong .env}"
 PROBE_TIMEOUT="${NAS_PROBE_TIMEOUT:-4}"
+
+# --- SMB --------------------------------------------------------------------
+# macOS cần tên share để mount smb://host/share. NAS_SMB_SHARE nên là NAME.
+SMB_SHARE="${NAS_SMB_SHARE:-}"
+
+find_smb_mount() {
+  local host="$1" mp
+  mp="$(mount | grep smbfs | grep -F "$host" \
+        | sed -nE 's#^.* on (/Volumes/.*) \(smbfs.*#\1#p' | head -1)"
+  [[ -n "$mp" && -d "$mp" ]] || return 1
+  if [[ -n "$SMB_SHARE" ]] && ! mount | grep smbfs | grep -F "$host/$SMB_SHARE" >/dev/null; then
+    return 1
+  fi
+  echo "$mp"
+}
+
+mount_smb() {
+  local host="$1" mp
+  if mp="$(find_smb_mount "$host")"; then
+    log "SMB đã mount sẵn tại $mp"
+    echo "$mp"
+    return 0
+  fi
+  [[ -n "$SMB_SHARE" ]] || return 1
+
+  log "thử SMB //$host/$SMB_SHARE ..."
+  osascript >/dev/null 2>&1 <<OSA
+try
+  mount volume "smb://$host/$SMB_SHARE" as user name "$WEBDAV_USERNAME" with password "$WEBDAV_PASSWORD"
+on error e number n
+  error e number n
+end try
+OSA
+  [[ $? -eq 0 ]] || return 1
+  mp="$(find_smb_mount "$host")" || return 1
+  log "SMB mount OK: $mp"
+  echo "$mp"
+}
+
+for i in 1 2 3 4 5; do
+  var="NAS_SMB_$i"
+  host="${!var:-}"
+  [[ -n "$host" ]] || continue
+  if MP="$(mount_smb "$host")"; then
+    echo "$MP"
+    exit 0
+  fi
+  log "SMB //$host/$SMB_SHARE không vào được, thử tuyến kế"
+done
+
+if [[ -n "$SMB_SHARE" ]]; then
+  log "Không kết nối được SMB, fallback sang WebDAV."
+else
+  log "NAS_SMB_SHARE chưa khai báo; chỉ kiểm tra SMB mount sẵn rồi fallback WebDAV."
+fi
 
 # Gom NAS_URL_1, NAS_URL_2, ... thành danh sách theo thứ tự
 URLS=()
