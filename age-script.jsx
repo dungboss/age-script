@@ -36,9 +36,12 @@ var CURRENT_YEAR = (new Date()).getFullYear();
 var DEFAULT_FROM_YEAR = 1956;
 var DEFAULT_TO_YEAR = 2006;
 
-// Lưu PNG trực tiếp, nhẹ hơn và ổn định hơn Save for Web khi chạy hàng loạt.
-var pngOptions = new PNGSaveOptions();
-pngOptions.interlaced = false;
+// Đồng bộ cách export với tri-script: PNG-24 qua Save for Web để Photoshop
+// tối ưu dung lượng và loại metadata không cần thiết.
+var exportOptions = new ExportOptionsSaveForWeb();
+exportOptions.quality = 100;
+exportOptions.PNG8 = false;
+exportOptions.format = SaveDocumentType.PNG;
 
 runMain();
 
@@ -842,7 +845,7 @@ function processMonth(month, template, selection) {
       changeLayerContent(quoteLayers[qi], applyAgeToQuote(quoteTemplates[qi], age));
     }
 
-    doc.saveAs(outputFile, pngOptions, true, Extension.LOWERCASE);
+    doc.exportDocument(outputFile, ExportType.SAVEFORWEB, exportOptions);
     exported++;
   }
 
