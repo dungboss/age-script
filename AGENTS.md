@@ -150,7 +150,7 @@ Chạy `run-age.bat smoke.json` (Windows) hoặc `./run-age.sh smoke.json` (macO
 
 ## Script làm gì
 
-Mỗi tháng có template: mở PSD **1 lần** → set layer `month` = tên tháng tiếng Anh →
+Mỗi tháng có template: mở PSD **1 lần** → giữ nguyên layer `month` theo PSD →
 lặp từng năm (set layer `year`, set layer `quote` = câu gốc với số đầu tiên thay bằng
 tuổi = năm hiện tại − year) → export PNG → đóng file.
 

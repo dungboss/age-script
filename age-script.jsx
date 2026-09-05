@@ -25,7 +25,8 @@ var doneFile = new File(baseFolder.fsName + "/age-run.done");
 // mọi ký tự khác giữ nguyên.
 var DEFAULT_OUTPUT_FORMULA = "[mm]-[year]";
 
-// Layer "month" luôn nhận tên tháng tiếng Anh, layer "year" luôn nhận năm 4 chữ số
+// Dùng tên tháng tiếng Anh cho placeholder [month] trong tên file.
+// Text layer "month" trong PSD được giữ nguyên.
 var MONTH_NAMES_EN = ["January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"];
 
@@ -805,11 +806,7 @@ function processMonth(month, template, selection) {
   open(template);
   var doc = app.activeDocument;
 
-  // Layer "month" cố định trong suốt vòng lặp năm — chỉ set 1 lần
-  var monthLayers = findAllLayersByName(doc, "month");
-  for (var ml = 0; ml < monthLayers.length; ml++) {
-    changeLayerContent(monthLayers[ml], MONTH_NAMES_EN[month - 1]);
-  }
+  // Giữ nguyên text layer "month" theo nội dung sẵn có trong PSD.
 
   var yearLayers = findAllLayersByName(doc, "year");
 
